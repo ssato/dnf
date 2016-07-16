@@ -75,7 +75,20 @@ class PluginSkipsTest(tests.support.TestCase):
     def test_skip(self):
         self.plugins = dnf.plugin.Plugins()
         self.plugins.load(testconf(), ('luck*',))
+        print([p.name for p in self.plugins.plugin_cls])
         self.assertLength(self.plugins.plugin_cls, 0)
+
+    def tearDown(self):
+        self.plugins.unload()
+
+class PluginEnabledTest(tests.support.TestCase):
+    def test_enabled(self):
+        self.plugins = dnf.plugin.Plugins()
+        self.plugins.load(testconf(), (), ('lucky',))
+        self.assertLength(self.plugins.plugin_cls, 1)
+        cls = self.plugins.plugin_cls[0]
+        assert(issubclass(cls, dnf.plugin.Plugin))
+        self.assertEqual(cls.name, 'lucky')
 
     def tearDown(self):
         self.plugins.unload()

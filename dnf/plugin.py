@@ -97,7 +97,7 @@ class Plugins(object):
             if disabled:
                 self.plugin_cls.remove(plug_cls)
 
-    def load(self, conf, skips):
+    def load(self, conf, skips, enabled=None):
         """Dynamically load relevant plugin modules."""
 
         if DYNAMIC_PACKAGE in sys.modules:
@@ -105,7 +105,9 @@ class Plugins(object):
         sys.modules[DYNAMIC_PACKAGE] = package = dnf.pycomp.ModuleType(DYNAMIC_PACKAGE)
         package.__path__ = []
 
-        files = iter_py_files(conf.pluginpath, skips)
+        if enabled is None:
+            enabled = []
+        files = iter_py_files(conf.pluginpath, skips, enabled)
         import_modules(package, files)
         self.plugin_cls = plugin_classes()[:]
         self.check_enabled(conf)
@@ -142,11 +144,13 @@ def import_modules(package, py_files):
             logger.error(_('Failed loading plugin: %s'), module)
             logger.log(dnf.logging.SUBDEBUG, '', exc_info=True)
 
-def iter_py_files(paths, skips):
+def iter_py_files(paths, skips, enabled):
     for p in paths:
         for fn in glob.glob('%s/*.py' % p):
             (name, _) = os.path.splitext(os.path.basename(fn))
-            if any(fnmatch.fnmatch(name, pattern) for pattern in skips):
+            if (any(fnmatch.fnmatch(name, pattern) for pattern in skips)
+                and not any(fnmatch.fnmatch(name, pattern) for pattern
+                            in enabled)):
                 continue
             yield fn
 

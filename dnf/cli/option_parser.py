@@ -242,6 +242,10 @@ class OptionParser(argparse.ArgumentParser):
                                  default=[], action=self._SplitCallback,
                                  help=_("disable plugins by name"),
                                  metavar='[plugin]')
+        main_parser.add_argument("--enableplugins", dest="enableplugins",
+                                 default=[], action=self._SplitCallback,
+                                 help=_("enable plugins by name"),
+                                 metavar='[plugin]')
         main_parser.add_argument("--releasever", default=None,
                                  help=_("override the value of $releasever"
                                         " in config and repo files"))
